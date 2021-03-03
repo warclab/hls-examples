@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
 
     xf::cv::xfMat2AXIvideo(imgInput, INPUT_STREAM);
 
-    sobel_accel(INPUT_STREAM, OUTPUT_STREAM_X, OUTPUT_STREAM_Y);
+    sobel_accel(INPUT_STREAM, OUTPUT_STREAM_X, OUTPUT_STREAM_Y, height, width);
 
     xf::cv::AXIvideo2xfMat(OUTPUT_STREAM_X, imgOutputx);
     xf::cv::AXIvideo2xfMat(OUTPUT_STREAM_Y, imgOutputy);

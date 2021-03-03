@@ -102,6 +102,8 @@ typedef hls::stream<xf::cv::ap_axiu<PIXEL_WIDTH, 1, 1, 1> > AXI_STREAM;
 
 void sobel_accel(AXI_STREAM& INPUT_STREAM, 
                 AXI_STREAM& OUTPUT_STREAM_X, 
-                AXI_STREAM& OUTPUT_STREAM_Y);
+                AXI_STREAM& OUTPUT_STREAM_Y,
+                unsigned short rows,
+                unsigned short cols); 
 
 #endif //  _XF_SOBEL_CONFIG_H_

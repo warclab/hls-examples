@@ -16,21 +16,31 @@
 
 #include "axis_sobel.h"
 
-void sobel_accel(AXI_STREAM& INPUT_STREAM, AXI_STREAM& OUTPUT_STREAM_X, AXI_STREAM& OUTPUT_STREAM_Y) {
+void sobel_accel(AXI_STREAM& INPUT_STREAM, AXI_STREAM& OUTPUT_STREAM_X, AXI_STREAM& OUTPUT_STREAM_Y,
+                unsigned short rows,
+                unsigned short cols) {
     #pragma HLS INTERFACE axis port=INPUT_STREAM
     #pragma HLS INTERFACE axis port=OUTPUT_STREAM_Y
     #pragma HLS INTERFACE axis port=OUTPUT_STREAM_Y
+    #pragma HLS INTERFACE s_axilite port=rows               bundle=control
+    #pragma HLS INTERFACE s_axilite port=cols               bundle=control
+    #pragma HLS INTERFACE s_axilite port=return             bundle=control
 
-    xf::cv::Mat<IN_TYPE, HEIGHT, WIDTH, NPC1> _src;
-    xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _dstgx;
-    xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _dstgy;
+    xf::cv::Mat<IN_TYPE, HEIGHT, WIDTH, NPC1> _src(rows, cols);
+    xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _dstgx(rows, cols);
+    xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _dstgy(rows, cols);
 
+    #pragma HLS stream variable=_src.data dim=1 depth=2
+    #pragma HLS stream variable=_dstgx.data dim=1 depth=2
+    #pragma HLS stream variable=_dstgy.data dim=1 depth=2
+	#pragma HLS dataflow
     xf::cv::AXIvideo2xfMat(INPUT_STREAM, _src);
-
+ 
     xf::cv::Sobel<XF_BORDER_CONSTANT, FILTER_WIDTH, IN_TYPE, OUT_TYPE, HEIGHT, WIDTH, NPC1, XF_USE_URAM>(_src, 
                                                                                                         _dstgx,
                                                                                                         _dstgy);
 
     xf::cv::xfMat2AXIvideo(_dstgx, OUTPUT_STREAM_X);
     xf::cv::xfMat2AXIvideo(_dstgy, OUTPUT_STREAM_Y);
+    return;
 }
