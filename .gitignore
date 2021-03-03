@@ -1,1 +1,6 @@
 .vitis_libs
+*.log
+*.app
+*.prj
+.version
+.settings.tcl
