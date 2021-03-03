@@ -4,7 +4,7 @@ set PROJ "axis_sobel.prj"
 set SOLN "sol1"
 
 if {![info exists CLKP]} {
-  set CLKP 3.3
+  set CLKP 10
 }
 
 open_project -reset $PROJ
@@ -19,7 +19,7 @@ set_part $XPART
 create_clock -period $CLKP
 
 if {$CSIM == 1} {
-  csim_design -argv "../../../../data/128x128.png"
+  csim_design -argv "../../../../data/1920x1080.png"
 }
 
 if {$CSYNTH == 1} {
@@ -27,7 +27,7 @@ if {$CSYNTH == 1} {
 }
 
 if {$COSIM == 1} {
-  cosim_design -argv "../../../../data/128x128.png"
+  cosim_design -argv "../../../../data/1920x1080.png"
 }
 
 if {$VIVADO_SYN == 1} {
