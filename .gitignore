@@ -4,3 +4,4 @@
 *.prj
 .version
 .settings.tcl
+settings.json

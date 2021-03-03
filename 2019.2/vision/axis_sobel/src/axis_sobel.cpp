@@ -16,12 +16,12 @@
 
 #include "axis_sobel.h"
 
-void sobel_accel(AXI_STREAM& INPUT_STREAM, AXI_STREAM& OUTPUT_STREAM_X, AXI_STREAM& OUTPUT_STREAM_Y,
+void sobel_accel(AXI_STREAM& input, AXI_STREAM& output_x, AXI_STREAM& output_y,
                 unsigned short rows,
                 unsigned short cols) {
-    #pragma HLS INTERFACE axis port=INPUT_STREAM
-    #pragma HLS INTERFACE axis port=OUTPUT_STREAM_Y
-    #pragma HLS INTERFACE axis port=OUTPUT_STREAM_Y
+    #pragma HLS INTERFACE axis port=input
+    #pragma HLS INTERFACE axis port=output_x
+    #pragma HLS INTERFACE axis port=output_y
     #pragma HLS INTERFACE s_axilite port=rows               bundle=control
     #pragma HLS INTERFACE s_axilite port=cols               bundle=control
     #pragma HLS INTERFACE s_axilite port=return             bundle=control
@@ -34,13 +34,13 @@ void sobel_accel(AXI_STREAM& INPUT_STREAM, AXI_STREAM& OUTPUT_STREAM_X, AXI_STRE
     #pragma HLS stream variable=_dstgx.data dim=1 depth=2
     #pragma HLS stream variable=_dstgy.data dim=1 depth=2
 	#pragma HLS dataflow
-    xf::cv::AXIvideo2xfMat(INPUT_STREAM, _src);
+    xf::cv::AXIvideo2xfMat(input, _src);
  
     xf::cv::Sobel<XF_BORDER_CONSTANT, FILTER_WIDTH, IN_TYPE, OUT_TYPE, HEIGHT, WIDTH, NPC1, XF_USE_URAM>(_src, 
                                                                                                         _dstgx,
                                                                                                         _dstgy);
 
-    xf::cv::xfMat2AXIvideo(_dstgx, OUTPUT_STREAM_X);
-    xf::cv::xfMat2AXIvideo(_dstgy, OUTPUT_STREAM_Y);
+    xf::cv::xfMat2AXIvideo(_dstgx, output_x);
+    xf::cv::xfMat2AXIvideo(_dstgy, output_y);
     return;
 }
