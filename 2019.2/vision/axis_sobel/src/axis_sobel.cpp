@@ -16,9 +16,21 @@
 
 #include "axis_sobel.h"
 
-void sobel_accel(xf::cv::Mat<IN_TYPE, HEIGHT, WIDTH, NPC1>& _src,
-                 xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1>& _dstgx,
-                 xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1>& _dstgy) {
-    xf::cv::Sobel<XF_BORDER_CONSTANT, FILTER_WIDTH, IN_TYPE, OUT_TYPE, HEIGHT, WIDTH, NPC1, XF_USE_URAM>(_src, _dstgx,
-                                                                                                         _dstgy);
+void sobel_accel(AXI_STREAM& INPUT_STREAM, AXI_STREAM& OUTPUT_STREAM_X, AXI_STREAM& OUTPUT_STREAM_Y) {
+    #pragma HLS INTERFACE axis port=INPUT_STREAM
+    #pragma HLS INTERFACE axis port=OUTPUT_STREAM_Y
+    #pragma HLS INTERFACE axis port=OUTPUT_STREAM_Y
+
+    xf::cv::Mat<IN_TYPE, HEIGHT, WIDTH, NPC1> _src;
+    xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _dstgx;
+    xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _dstgy;
+
+    xf::cv::AXIvideo2xfMat(INPUT_STREAM, _src);
+
+    xf::cv::Sobel<XF_BORDER_CONSTANT, FILTER_WIDTH, IN_TYPE, OUT_TYPE, HEIGHT, WIDTH, NPC1, XF_USE_URAM>(_src, 
+                                                                                                        _dstgx,
+                                                                                                        _dstgy);
+
+    xf::cv::xfMat2AXIvideo(_dstgx, OUTPUT_STREAM_X);
+    xf::cv::xfMat2AXIvideo(_dstgy, OUTPUT_STREAM_Y);
 }

@@ -18,19 +18,30 @@
 #define _XF_SOBEL_CONFIG_H_
 
 #include "hls_stream.h"
-#include "ap_int.h"
+
 #include "common/xf_common.hpp"
 #include "common/xf_utility.hpp"
 #include "imgproc/xf_sobel.hpp"
+#include "common/xf_infra.hpp"
+
 #include "axis_sobel_params.h"
 
 typedef unsigned int uint32_t;
 
 //////////////  To set the parameters in Top and Test bench //////////////////
 
+/* Define the AXI Stream type */
+const int PPC = 8;
+const int PIXEL_WIDTH = 8 * PPC; /* 8 pixels per clock*/
+// typedef ap_axis <PIXEL_WIDTH,1,1,1> AXI_T;
+// hls::stream<ap_uint<128>
+typedef hls::stream<xf::cv::ap_axiu<PIXEL_WIDTH, 1, 1, 1> > AXI_STREAM;
+/// typedef ap_axiu<PIXEL_WIDTH, 1, 1, 1> package_t;
+// typedef hls::stream<package_t> AXI_STREAM;
+
 /* config width and height */
-#define WIDTH 128
-#define HEIGHT 128
+#define WIDTH 1920
+#define HEIGHT 1080
 
 //#define DDEPTH XF_8UC1
 
@@ -86,8 +97,11 @@ typedef unsigned int uint32_t;
 #endif
 #endif
 #endif
-void sobel_accel(xf::cv::Mat<IN_TYPE, HEIGHT, WIDTH, NPC1>& _src,
-                 xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1>& _dstgx,
-                 xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1>& _dstgy);
+
+
+
+void sobel_accel(AXI_STREAM& INPUT_STREAM, 
+                AXI_STREAM& OUTPUT_STREAM_X, 
+                AXI_STREAM& OUTPUT_STREAM_Y);
 
 #endif //  _XF_SOBEL_CONFIG_H_

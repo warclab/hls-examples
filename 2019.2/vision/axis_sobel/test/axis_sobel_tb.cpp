@@ -35,6 +35,10 @@ int main(int argc, char** argv) {
     cv::Mat hls_grad_x, hls_grad_y;
     cv::Mat diff_grad_x, diff_grad_y;
 
+    AXI_STREAM INPUT_STREAM;
+    AXI_STREAM OUTPUT_STREAM_X;
+    AXI_STREAM OUTPUT_STREAM_Y;
+
 // reading in the color image
 #if GRAY
     in_img = cv::imread(argv[1], 0);
@@ -95,7 +99,14 @@ int main(int argc, char** argv) {
 
     imgInput.copyTo(in_img.data);
 
-    sobel_accel(imgInput, imgOutputx, imgOutputy);
+
+    xf::cv::xfMat2AXIvideo(imgInput, INPUT_STREAM);
+
+    sobel_accel(INPUT_STREAM, OUTPUT_STREAM_X, OUTPUT_STREAM_Y);
+
+    xf::cv::AXIvideo2xfMat(OUTPUT_STREAM_X, imgOutputx);
+    xf::cv::AXIvideo2xfMat(OUTPUT_STREAM_Y, imgOutputy);
+
 
     // Write output image
     xf::cv::imwrite("hls_out_x.jpg", imgOutputx);
