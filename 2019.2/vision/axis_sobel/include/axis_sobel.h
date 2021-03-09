@@ -23,6 +23,7 @@
 #include "common/xf_utility.hpp"
 #include "imgproc/xf_sobel.hpp"
 #include "common/xf_infra.hpp"
+#include "imgproc/xf_add_weighted.hpp"
 
 #include "axis_sobel_params.h"
 
@@ -33,11 +34,8 @@ typedef unsigned int uint32_t;
 /* Define the AXI Stream type */
 const int PPC = 8;
 const int PIXEL_WIDTH = 8 * PPC; /* 8 pixels per clock*/
-// typedef ap_axis <PIXEL_WIDTH,1,1,1> AXI_T;
-// hls::stream<ap_uint<128>
+
 typedef hls::stream<xf::cv::ap_axiu<PIXEL_WIDTH, 1, 1, 1> > AXI_STREAM;
-/// typedef ap_axiu<PIXEL_WIDTH, 1, 1, 1> package_t;
-// typedef hls::stream<package_t> AXI_STREAM;
 
 /* config width and height */
 #define WIDTH 1920
@@ -101,8 +99,7 @@ typedef hls::stream<xf::cv::ap_axiu<PIXEL_WIDTH, 1, 1, 1> > AXI_STREAM;
 
 
 void sobel_accel(AXI_STREAM& input, 
-                AXI_STREAM& output_x, 
-                AXI_STREAM& output_y,
+                AXI_STREAM& output, 
                 unsigned short rows,
                 unsigned short cols); 
 

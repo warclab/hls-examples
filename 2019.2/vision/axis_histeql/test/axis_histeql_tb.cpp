@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 #include "common/xf_headers.hpp"
-#include "axis_sobel.h"
+#include "axis_histeql.h"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -30,12 +30,12 @@ int main(int argc, char** argv) {
     char out_errorx[100], out_hlsy[100], out_ocvy[100], out_errory[100];
 
     cv::Mat in_img, in_gray, diff;
-    cv::Mat c_grad_x_1, c_grad_y_1, grad;
+    cv::Mat c_grad_x_1, c_grad_y_1;
     cv::Mat c_grad_x, c_grad_y;
     cv::Mat hls_grad_x, hls_grad_y;
-    cv::Mat diff_grad_x, diff_grad_y, diff_grad;
+    cv::Mat diff_grad_x, diff_grad_y;
 
-    AXI_STREAM input, output;
+    AXI_STREAM input, output_x, output_y;
 
 // reading in the color image
 #if GRAY
@@ -81,8 +81,6 @@ int main(int argc, char** argv) {
     hls_grad_y.create(in_img.rows, in_img.cols, PTYPE);
     diff_grad_x.create(in_img.rows, in_img.cols, PTYPE);
     diff_grad_y.create(in_img.rows, in_img.cols, PTYPE);
-    diff_grad.create(in_img.rows, in_img.cols, PTYPE);
-
 
     cv::Sobel(in_img, c_grad_x_1, ddepth, 1, 0, FILTER_WIDTH, scale, delta, cv::BORDER_CONSTANT);
     cv::Sobel(in_img, c_grad_y_1, ddepth, 0, 1, FILTER_WIDTH, scale, delta, cv::BORDER_CONSTANT);
@@ -90,28 +88,27 @@ int main(int argc, char** argv) {
     imwrite("out_ocvx.jpg", c_grad_x_1);
     imwrite("out_ocvy.jpg", c_grad_y_1);
 
-    cv::addWeighted(c_grad_x_1, 0.5, c_grad_y_1, 0.5, 0, grad);
-
     unsigned short height = in_img.rows;
     unsigned short width = in_img.cols;
 
     static xf::cv::Mat<IN_TYPE, HEIGHT, WIDTH, NPC1> imgInput(in_img.rows, in_img.cols);
-    static xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> imgOutput(in_img.rows, in_img.cols);
-    
+    static xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> imgOutputx(in_img.rows, in_img.cols);
+    static xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> imgOutputy(in_img.rows, in_img.cols);
 
     imgInput.copyTo(in_img.data);
 
 
     xf::cv::xfMat2AXIvideo(imgInput, input);
 
-    sobel_accel(input, output, height, width);
+    sobel_accel(input, output_x, output_y, height, width);
 
-    xf::cv::AXIvideo2xfMat(output, imgOutput);
+    xf::cv::AXIvideo2xfMat(output_x, imgOutputx);
+    xf::cv::AXIvideo2xfMat(output_y, imgOutputy);
 
 
     // Write output image
-    imwrite("hls_out.jpg", imgOutput);
-    imwrite("cv_out.jpg", grad);
+    xf::cv::imwrite("hls_out_x.jpg", imgOutputx);
+    xf::cv::imwrite("hls_out_y.jpg", imgOutputy);
 
 /*	hls_grad_x.data = (unsigned char *)imgOutputx.copyFrom();
         hls_grad_y.data = (unsigned char *)imgOutputy.copyFrom();
@@ -122,9 +119,8 @@ int main(int argc, char** argv) {
 
 //////////////////  Compute Absolute Difference ////////////////////
 #if (FILTER_WIDTH == 3 | FILTER_WIDTH == 5)
-    // xf::cv::absDiff(c_grad_x_1, imgOutputx, diff_grad_x);
-    // xf::cv::absDiff(c_grad_y_1, imgOutputy, diff_grad_y);
-    xf::cv::absDiff(grad, imgOutput, diff_grad);
+    xf::cv::absDiff(c_grad_x_1, imgOutputx, diff_grad_x);
+    xf::cv::absDiff(c_grad_y_1, imgOutputy, diff_grad_y);
 #endif
 
 #if (FILTER_WIDTH == 7)
@@ -143,16 +139,14 @@ int main(int argc, char** argv) {
     }
 #endif
 
-    // imwrite("out_errorx.jpg", diff_grad_x);
-    // imwrite("out_errory.jpg", diff_grad_y);
-    imwrite("out_error.jpg", diff_grad);
+    imwrite("out_errorx.jpg", diff_grad_x);
+    imwrite("out_errory.jpg", diff_grad_y);
 
-    float err_per, err_per0, err_per1;
+    float err_per, err_per1;
     int ret;
 
-    xf::cv::analyzeDiff(diff_grad, 0, err_per);
-    // xf::cv::analyzeDiff(diff_grad_x, 0, err_per0);
-    // xf::cv::analyzeDiff(diff_grad_y, 0, err_per1);
+    xf::cv::analyzeDiff(diff_grad_x, 0, err_per);
+    xf::cv::analyzeDiff(diff_grad_y, 0, err_per1);
 
     if (err_per > 0.0f) {
         printf("Test failed .... !!!\n");

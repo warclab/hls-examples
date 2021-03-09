@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-#include "axis_sobel.h"
+#include "axis_histeql.h"
 
-void sobel_accel(AXI_STREAM& input, AXI_STREAM& output,
+void equalizeHist_accel(AXI_STREAM& input, AXI_STREAM& output_x, AXI_STREAM& output_y,
                 unsigned short rows,
                 unsigned short cols) {
     #pragma HLS INTERFACE axis port=input
-    #pragma HLS INTERFACE axis port=output
+    #pragma HLS INTERFACE axis port=output_x
+    #pragma HLS INTERFACE axis port=output_y
     #pragma HLS INTERFACE s_axilite port=rows               bundle=control
     #pragma HLS INTERFACE s_axilite port=cols               bundle=control
     #pragma HLS INTERFACE s_axilite port=return             bundle=control
@@ -28,25 +29,20 @@ void sobel_accel(AXI_STREAM& input, AXI_STREAM& output,
     xf::cv::Mat<IN_TYPE, HEIGHT, WIDTH, NPC1> _src(rows, cols);
     xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _dstgx(rows, cols);
     xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _dstgy(rows, cols);
-    xf::cv::Mat<OUT_TYPE, HEIGHT, WIDTH, NPC1> _out(rows, cols);
 
     #pragma HLS stream variable=_src.data dim=1 depth=2
     #pragma HLS stream variable=_dstgx.data dim=1 depth=2
     #pragma HLS stream variable=_dstgy.data dim=1 depth=2
-    #pragma HLS stream variable=_out.data dim=1 depth=2
 	#pragma HLS dataflow
     xf::cv::AXIvideo2xfMat(input, _src);
- 
+    
+    xf::cv::equalizeHist<XF_8UC1, HEIGHT, WIDTH, NPIX>(_src, _src1, _dst);
+
     xf::cv::Sobel<XF_BORDER_CONSTANT, FILTER_WIDTH, IN_TYPE, OUT_TYPE, HEIGHT, WIDTH, NPC1, XF_USE_URAM>(_src, 
                                                                                                         _dstgx,
                                                                                                         _dstgy);
-    xf::cv::addWeighted<IN_TYPE, OUT_TYPE, HEIGHT, WIDTH, NPC1>(_dstgx, 
-                                                                0.5, 
-                                                                _dstgy, 
-                                                                0.5, 
-                                                                0, 
-                                                                _out);
 
-    xf::cv::xfMat2AXIvideo(_out, output);
+    xf::cv::xfMat2AXIvideo(_dstgx, output_x);
+    xf::cv::xfMat2AXIvideo(_dstgy, output_y);
     return;
 }

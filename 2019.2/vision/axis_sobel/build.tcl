@@ -19,7 +19,7 @@ set_part $XPART
 create_clock -period $CLKP
 
 if {$CSIM == 1} {
-  csim_design -argv "../../../../data/1920x1080.png"
+  csim_design -argv "../../../../../data/1920x1080.png"
 }
 
 if {$CSYNTH == 1} {
@@ -27,7 +27,7 @@ if {$CSYNTH == 1} {
 }
 
 if {$COSIM == 1} {
-  cosim_design -argv "../../../../data/1920x1080.png"
+  cosim_design -argv "../../../../../data/1920x1080.png"
 }
 
 if {$VIVADO_SYN == 1} {
