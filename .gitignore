@@ -5,3 +5,5 @@
 .version
 .settings.tcl
 settings.json
+
+*.tar.gz

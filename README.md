@@ -2,6 +2,10 @@
 
 This is a collection of HLS source/tcl scripts the WARC group uses to test/evalute research.
 
+## Requirements
+
+- Python 3
+
 ## Table of Contents
 <!-- TOC -->
 
