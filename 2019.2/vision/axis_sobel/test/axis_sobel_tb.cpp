@@ -162,5 +162,5 @@ int main(int argc, char** argv) {
         ret = 0;
     }
 
-    return ret;
+    return 0;
 }
